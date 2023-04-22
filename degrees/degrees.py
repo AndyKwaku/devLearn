@@ -84,6 +84,13 @@ def main():
             print(f"{i + 1}: {person1} and {person2} starred in {movie}")
 
 
+def co_stars(state):
+    results = []
+    for movie in people[state]["movies"]:
+        for star in movies[movie]["stars"]:
+            results.append((movie, star))
+    return results
+
 def shortest_path(source, target):
     """
     Returns the shortest list of (movie_id, person_id) pairs
@@ -91,6 +98,34 @@ def shortest_path(source, target):
 
     If no possible path, returns None.
     """
+    source_node = Node(state=source, parent=None, action=None)
+    frontier = StackFrontier()
+    frontier.add(source_node)
+
+    explored = set()
+    paths = []
+
+    if frontier.empty():
+        return None
+    
+    while not frontier.empty():
+        node = frontier.remove()
+
+        if node.state == target:
+            path = []
+            while node.parent is not None:
+                path.append((node.action, node.state))
+            paths.append(path)
+
+        explored.add(node.state)
+
+        for movie, star in co_stars(node.state):
+            if not frontier.contains_state(star) and star not in explored:
+                child = Node(state=star, parent=node, action=movie)
+                frontier.add(child)
+
+    solution = min(paths)
+    return solution
 
     # TODO
     raise NotImplementedError
